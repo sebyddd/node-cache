@@ -143,12 +143,24 @@ exports.exportJson = function() {
   return JSON.stringify(plainJsCache);
 };
 
-exports.importJson = function(jsonToImport) {
+exports.importJson = function(jsonToImport, options) {
   var cacheToImport = JSON.parse(jsonToImport);
   var currTime = Date.now();
 
+  var skipDuplicates = options && options.skipDuplicates;
+
   for (var key in cacheToImport) {
     if (cacheToImport.hasOwnProperty(key)) {
+      if (skipDuplicates) {
+        var existingRecord = cache[key];
+        if (existingRecord) {
+          if (debug) {
+            console.log('Skipping duplicate imported key \'%s\'', key);
+          }
+          continue;
+        }
+      }
+
       var record = cacheToImport[key];
 
       // This could possibly be `'NaN'` if there's no expiry set.
